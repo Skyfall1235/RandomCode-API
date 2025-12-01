@@ -69,7 +69,7 @@ public class WebhookService : IWebhookService
     {
         string json = JsonConvert.SerializeObject(payload);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
-//this can be wayyyy better
+//this can be wayyyyy better
         foreach (var url in _listeners)
         {
             try
