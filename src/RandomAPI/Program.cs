@@ -23,3 +23,27 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+
+//TODO:
+// - AlertGatewayService
+//      API Endpoint Goal: POST / alert / ingest
+//      Brief Description(Project Scope): Centralized Notification Hub with Discord Integration.
+//      Receives generic webhooks (from Sentry, CI/CD, etc.), standardizes the payload, applies personalized filtering rules, and routes the cleaned alert to your Discord channel using a webhook.
+//      The service will format the alert into a visually appealing Discord Embed using a library like discord-webhook or requests.
+public class WebhookService { }
+
+// - HealthCheckAggregator
+//      API Endpoint Goal: GET / health / summary
+//      Brief Description(Project Scope): Unified System Status Dashboard.
+//      Periodically polls the health endpoints (/status or /health) of critical development services (Database, Backend API, CI/CD pipeline).
+//      Aggregates the results into a single, simplified GREEN/YELLOW/RED status JSON response for quick checking.
+public class HealthCheckService { }
+
+// - UniversalSnippetStore
+//      API Endpoint Goal: POST / snippet and GET /snippet/search
+//      Brief Description (Project Scope): Personal Developer Knowledge Base.
+//      A CRUD API to save and retrieve frequently forgotten code snippets, complex CLI commands, and database queries.
+//      Supports robust searching by language (python, sql) and customizable tags (regex, lambda, auth).
+public class UniversalSnippetService { }
+// will require a db
