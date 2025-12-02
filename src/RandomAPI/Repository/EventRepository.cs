@@ -8,9 +8,11 @@ namespace RandomAPI.Repository
     public class EventRepository : IEventRepository
     {
         private readonly IDbConnection _db;
-        public EventRepository(IDbConnection db)
+        private readonly ILogger<EventRepository> _logger;
+        public EventRepository(IDbConnection db, ILogger<EventRepository> logger)
         {
             _db = db;
+            _logger = logger;
         }
 
         /// <inheritdoc />
@@ -29,14 +31,14 @@ namespace RandomAPI.Repository
             }
             catch (SqliteException ex) when (ex.SqliteErrorCode == 19) // Error code 19 is 'CONSTRAINT'
             {
-                Console.WriteLine($"WARNING: Duplicate event detected. EventId: {eventModel.EventId}");
+                _logger.LogWarning($"WARNING: Duplicate event detected. EventId: {eventModel.EventId}");
                 const string selectExistingSql = "SELECT Id FROM Events WHERE EventId = @EventId";
                 var existingId = await _db.ExecuteScalarAsync<int>(selectExistingSql, new { eventModel.EventId });
                 return existingId;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR during event insertion: {ex.Message}");
+                _logger.LogError($"ERROR during event insertion: {ex.Message}");
                 throw;
             }
         }

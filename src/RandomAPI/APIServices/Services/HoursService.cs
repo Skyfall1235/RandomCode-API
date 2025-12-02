@@ -1,9 +1,17 @@
+using Microsoft.Extensions.Logging;
 using RandomAPI.DTOs;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
 public class HoursService : IHoursService
 {
+    private readonly ILogger<IHoursService> _logger;
+
+    public HoursService(ILogger<IHoursService> logger)
+    {
+        _logger = logger;
+    }
+
     public HoursResponseDto Calculate(HoursRequestDto request)
     {
         var rounded = request.Hours.Select(RoundToQuarter).ToList();
@@ -63,8 +71,10 @@ public class HoursService : IHoursService
         {
             return parsed;
         }
-
-        throw new FormatException("Invalid time format.");
+        //if fail, throw and log
+        Exception e = new FormatException("Invalid time format.");
+        _logger.LogWarning(e, "Invalid time format.");
+        throw e;
     }
 
     private double RoundToQuarter(double hours)
