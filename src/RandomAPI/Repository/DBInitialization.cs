@@ -4,6 +4,7 @@ using Dapper;
 public static class DBInitialization
 {
     public const string CONNECTIONSTRING = "Data Source=PersonalDev.db";
+
     public static async Task EnsureDb(IServiceProvider services)
     {
         // Use an isolated scope for startup to safely create the connection
@@ -11,7 +12,8 @@ public static class DBInitialization
         var db = scope.ServiceProvider.GetRequiredService<IDbConnection>();
 
         //to make more tasbles, write the sql and await and chain it :)
-        var sql = @"
+        var sql =
+            @"
         CREATE TABLE IF NOT EXISTS Events (
             Id          INTEGER PRIMARY KEY AUTOINCREMENT,
             Timestamp   TEXT NOT NULL,

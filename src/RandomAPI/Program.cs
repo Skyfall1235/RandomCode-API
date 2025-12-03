@@ -1,15 +1,37 @@
 using System.Data;
 using Microsoft.Data.Sqlite;
-
+using RandomAPI.Repository;
+using RandomAPI.Services.Webhooks;
 
 var builder = WebApplication.CreateBuilder(args);
+
 // Add services to the container.
 
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddTransient<IDbConnection>(_ => new SqliteConnection(DBInitialization.CONNECTIONSTRING));
+builder.Services.AddTransient<IDbConnection>(_ => new SqliteConnection(
+    DBInitialization.CONNECTIONSTRING
+));
+
+//webhook
+builder.Services.AddSingleton<IWebhookService, WebhookService>();
+
+//time clock service
+builder.Services.AddSingleton<IHoursService, TimeOutService>();
+
+//db
+builder.Services.AddScoped<IEventRepository, EventRepository>();
+//the the end, init the dbs
+using (var scope = builder.Services.CreateScope())
+{
+    var serviceProvider = scope.ServiceProvider;
+    var initializers = serviceProvider.GetServices<IInitializer>();
+    var initializationTasks = initializers.Select(i => i.InitializeAsync());
+    await Task.WhenAll(initializationTasks);
+}
 
 var app = builder.Build();
 await DBInitialization.EnsureDb(app.Services);
@@ -28,9 +50,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-
-
 
 // TODO:
 // - good logging service. rabapp has an event table, i bet i could do something worse
