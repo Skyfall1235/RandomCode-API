@@ -1,17 +1,10 @@
-using Microsoft.Extensions.Logging;
-using RandomAPI.DTOs;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
+using RandomAPI.DTOs;
 
-public class HoursService : IHoursService
+public class TimeOutService(ILogger<IHoursService> logger) : IHoursService
 {
-    private readonly ILogger<IHoursService> _logger;
-
-    public HoursService(ILogger<IHoursService> logger)
-    {
-        _logger = logger;
-    }
-
     public HoursResponseDto Calculate(HoursRequestDto request)
     {
         var rounded = request.Hours.Select(RoundToQuarter).ToList();
@@ -42,7 +35,7 @@ public class HoursService : IHoursService
             HoursWorkedRounded = hoursWorkedRounded,
             RemainingHours = remaining,
             MinTimeOut = min.ToString("hh:mm tt"),
-            MaxTimeOut = max.ToString("hh:mm tt")
+            MaxTimeOut = max.ToString("hh:mm tt"),
         };
     }
 
@@ -57,23 +50,23 @@ public class HoursService : IHoursService
         if (Regex.IsMatch(input, @"^\d{1,2}(am|pm)$"))
             input = input.Replace("am", ":00am").Replace("pm", ":00pm");
 
-        string[] formats =
-        {
-            "h:mmtt", "hh:mmtt",
-            "htt", "hhtt",
-            "h tt", "hh tt"
-        };
+        string[] formats = { "h:mmtt", "hh:mmtt", "htt", "hhtt", "h tt", "hh tt" };
 
-        if (DateTime.TryParseExact(input, formats,
-            CultureInfo.InvariantCulture,
-            DateTimeStyles.None,
-            out DateTime parsed))
+        if (
+            DateTime.TryParseExact(
+                input,
+                formats,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out DateTime parsed
+            )
+        )
         {
             return parsed;
         }
         //if fail, throw and log
         Exception e = new FormatException("Invalid time format.");
-        _logger.LogWarning(e, "Invalid time format.");
+        logger.LogWarning(e, "Invalid time format.");
         throw e;
     }
 
@@ -82,6 +75,3 @@ public class HoursService : IHoursService
         return Math.Round(hours * 4) / 4.0;
     }
 }
-
-
-

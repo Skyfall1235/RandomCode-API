@@ -5,6 +5,4 @@ namespace RandomAPI.DTOs
         public List<double> Hours { get; set; } = new();
         public string TimeIn { get; set; } = "";
     }
-
-
 }

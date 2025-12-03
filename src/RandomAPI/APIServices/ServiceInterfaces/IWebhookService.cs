@@ -3,7 +3,7 @@ public interface IWebhookService
     /// <summary>
     /// Sends a webhook notification to all registered listeners.
     /// </summary>
-    Task BroadcastAsync<T>(T payload);
+    Task BroadcastAsync<T>(T payload) where T : class;
 
     /// <summary>
     /// Registers a new webhook listener URL.

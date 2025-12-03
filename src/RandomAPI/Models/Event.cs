@@ -1,6 +1,4 @@
-﻿using RandomAPI.Cryptography;
-
-namespace RandomAPI.Models
+﻿namespace RandomAPI.Models
 {
     public class Event
     {
@@ -13,7 +11,15 @@ namespace RandomAPI.Models
         public string? JsonData { get; set; }
 
         public Event() { }
-        public Event(int id, DateTime timestamp, string? service, string? type, string? dataType, string? jsonData)
+
+        public Event(
+            int id,
+            DateTime timestamp,
+            string? service,
+            string? type,
+            string? dataType,
+            string? jsonData
+        )
         {
             Id = id;
             Timestamp = timestamp;
@@ -23,12 +29,12 @@ namespace RandomAPI.Models
             DataType = dataType;
             JsonData = jsonData;
         }
+
         /// <summary>
         /// Creates a new event, auto-generating Timestamp and content-based EventId.
         /// </summary>
         public Event(string service, string type, string jsonData, string dataType = "JSON")
         {
-
             Service = service;
             Type = type;
             DataType = dataType;

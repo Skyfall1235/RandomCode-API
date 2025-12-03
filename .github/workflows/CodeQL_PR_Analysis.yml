@@ -5,26 +5,51 @@ permissions:
 
 on:
   pull_request:
+    # Triggers analysis on pull requests targeting the main branch
     branches: [ main ]
-
+  push:
+    # Also good practice to run on pushes to main for full analysis
+    branches: [ main ]
+  
 jobs:
   analyze:
     name: Analyze code with CodeQL
+    # Use newer, stable runner
     runs-on: ubuntu-latest
+    
+    # Permission setup is highly recommended for security analysis
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        # Use the latest stable version
+        uses: actions/checkout@v4
+        with:
+          # Important for CodeQL to fetch history
+          fetch-depth: 0 
+
+      # NEW: Setup the .NET SDK environment
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          # Assuming you are targeting .NET 8, adjust if needed
+          dotnet-version: '8.0.x' 
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: csharp
           # Using default queries (security + quality)
-          # You can also specify custom queries if needed
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+      # FIX: Removed 'github/codeql-action/autobuild'. 
+      # C# projects must be built explicitly so CodeQL can monitor the compiler output.
+      - name: Build Project
+        # Run dotnet build on your project directory to compile the code
+        # Based on your Dependabot config, the project is in 'src/RandomAPI'
+        run: dotnet build src/RandomAPI/RandomAPI.csproj
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3

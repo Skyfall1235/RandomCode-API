@@ -1,24 +1,43 @@
-﻿using Dapper;
-using RandomAPI.Models;
-using System.Data;
+﻿using System.Data;
+using Dapper;
 using Microsoft.Data.Sqlite;
+using RandomAPI.Models;
 
 namespace RandomAPI.Repository
 {
-    public class EventRepository : IEventRepository
+    public class EventRepository : IEventRepository, IInitializer
     {
         private readonly IDbConnection _db;
         private readonly ILogger<EventRepository> _logger;
+
         public EventRepository(IDbConnection db, ILogger<EventRepository> logger)
         {
             _db = db;
             _logger = logger;
         }
 
+        public async Task InitializeAsync()
+        {
+            var sql =
+                    @"
+        CREATE TABLE IF NOT EXISTS Events (
+            Id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            Timestamp   TEXT NOT NULL,
+            Service     TEXT NOT NULL,
+            Type        TEXT NOT NULL,
+            DataType    TEXT,
+            JsonData    TEXT NOT NULL,
+            EventId     TEXT NOT NULL,
+            CONSTRAINT UQ_EventId UNIQUE (EventId)
+        );";
+            await _db.ExecuteAsync(sql);
+        }
+
         /// <inheritdoc />
         public async Task<int> AddEventAsync(Event eventModel)
         {
-            const string sql = @"
+            const string sql =
+                @"
                 INSERT INTO Events (Timestamp, EventId, Service, Type, DataType, JsonData) 
                 VALUES (@Timestamp, @EventId, @Service, @Type, @DataType, @JsonData);
                 
@@ -31,9 +50,14 @@ namespace RandomAPI.Repository
             }
             catch (SqliteException ex) when (ex.SqliteErrorCode == 19) // Error code 19 is 'CONSTRAINT'
             {
-                _logger.LogWarning($"WARNING: Duplicate event detected. EventId: {eventModel.EventId}");
+                _logger.LogWarning(
+                    $"WARNING: Duplicate event detected. EventId: {eventModel.EventId}"
+                );
                 const string selectExistingSql = "SELECT Id FROM Events WHERE EventId = @EventId";
-                var existingId = await _db.ExecuteScalarAsync<int>(selectExistingSql, new { eventModel.EventId });
+                var existingId = await _db.ExecuteScalarAsync<int>(
+                    selectExistingSql,
+                    new { eventModel.EventId }
+                );
                 return existingId;
             }
             catch (Exception ex)
@@ -65,7 +89,8 @@ namespace RandomAPI.Repository
         /// <inheritdoc />
         public async Task<IEnumerable<Event>> GetEventsByIdsAsync(IEnumerable<int> ids)
         {
-            if (ids == null || !ids.Any()) return Enumerable.Empty<Event>();
+            if (ids == null || !ids.Any())
+                return Enumerable.Empty<Event>();
 
             const string sql = "SELECT * FROM Events WHERE Id IN @Ids ORDER BY Timestamp DESC";
 
@@ -85,7 +110,8 @@ namespace RandomAPI.Repository
         /// <inheritdoc />
         public async Task<int> RemoveEventsByIdsAsync(IEnumerable<int> ids)
         {
-            if (ids == null || !ids.Any()) return 0;
+            if (ids == null || !ids.Any())
+                return 0;
 
             const string sql = "DELETE FROM Events WHERE Id IN @Ids";
 

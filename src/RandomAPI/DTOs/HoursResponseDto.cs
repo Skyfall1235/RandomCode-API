@@ -8,6 +8,4 @@ namespace RandomAPI.DTOs
         public string MinTimeOut { get; set; } = "";
         public string MaxTimeOut { get; set; } = "";
     }
-
-
 }

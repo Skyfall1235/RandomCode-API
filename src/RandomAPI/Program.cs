@@ -1,18 +1,57 @@
 using System.Data;
 using Microsoft.Data.Sqlite;
-
+using RandomAPI.Repository;
+using RandomAPI.Services.Webhooks;
 
 var builder = WebApplication.CreateBuilder(args);
+
 // Add services to the container.
 
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddTransient<IDbConnection>(_ => new SqliteConnection(DBInitialization.CONNECTIONSTRING));
+builder.Services.AddTransient<IDbConnection>(_ => new SqliteConnection(
+    DBInitialization.CONNECTIONSTRING
+));
+
+#region Add Services
+//webhook
+builder.Services.AddSingleton<IWebhookService, WebhookService>();
+
+//time clock service
+builder.Services.AddSingleton<IHoursService, TimeOutService>();
+
+//db
+builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<IWebhookRepository, WebhookRepository>();
+
+#endregion
+
+#region Initialization
+//scanner for initializations
+builder.Services.Scan(scan => scan
+    .FromAssemblyOf<IInitializer>()
+    .AddClasses(c => c.AssignableTo<IInitializer>())
+        .As<IInitializer>()
+        .WithScopedLifetime()
+);
 
 var app = builder.Build();
-await DBInitialization.EnsureDb(app.Services);
+//the the end, init the dbs
+using (var scope = app.Services.CreateScope())
+{
+    IServiceProvider? serviceProvider = scope.ServiceProvider;
+    IEnumerable<IInitializer>? initializers = serviceProvider.GetServices<IInitializer>();
+    if (!initializers.Any())
+    {
+        Console.WriteLine("Warning: No services implementing IInitializer were found.");
+    }
+    IEnumerable<Task>? initializationTasks = initializers.Select(i => i.InitializeAsync());
+    await Task.WhenAll(initializationTasks);
+}
+#endregion
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -28,9 +67,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-
-
 
 // TODO:
 // - good logging service. rabapp has an event table, i bet i could do something worse
