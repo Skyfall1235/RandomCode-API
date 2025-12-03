@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace RandomAPI.Cryptography
+namespace RandomAPI.Models
 {
     /// <summary>
     /// Provides utility methods for generating short, unique hashes.
@@ -32,4 +32,3 @@ namespace RandomAPI.Cryptography
         }
     }
 }
-
