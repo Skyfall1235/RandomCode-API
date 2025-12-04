@@ -7,17 +7,25 @@ namespace RandomAPI.Repository
 {
     public class EventRepository : IEventRepository, IInitializer
     {
-        private readonly IDbConnection _db;
+        private readonly Func<IDbConnection> _connectionFactory;
         private readonly ILogger<EventRepository> _logger;
 
-        public EventRepository(IDbConnection db, ILogger<EventRepository> logger)
+        public EventRepository(Func<IDbConnection> connectionFactory, ILogger<EventRepository> logger)
         {
-            _db = db;
+            _connectionFactory = connectionFactory;
             _logger = logger;
+        }
+
+        private IDbConnection CreateConnection()
+        {
+            var conn = _connectionFactory();
+            conn.Open();
+            return conn;
         }
 
         public async Task InitializeAsync()
         {
+            using var db = CreateConnection();
             var sql =
                     @"
         CREATE TABLE IF NOT EXISTS Events (
@@ -30,12 +38,13 @@ namespace RandomAPI.Repository
             EventId     TEXT NOT NULL,
             CONSTRAINT UQ_EventId UNIQUE (EventId)
         );";
-            await _db.ExecuteAsync(sql);
+            await db.ExecuteAsync(sql);
         }
 
         /// <inheritdoc />
         public async Task<int> AddEventAsync(Event eventModel)
         {
+            using var db = CreateConnection();
             const string sql =
                 @"
                 INSERT INTO Events (Timestamp, EventId, Service, Type, DataType, JsonData) 
@@ -45,7 +54,7 @@ namespace RandomAPI.Repository
 
             try
             {
-                var newId = await _db.ExecuteScalarAsync<int>(sql, eventModel);
+                var newId = await db.ExecuteScalarAsync<int>(sql, eventModel);
                 return newId;
             }
             catch (SqliteException ex) when (ex.SqliteErrorCode == 19) // Error code 19 is 'CONSTRAINT'
@@ -54,7 +63,7 @@ namespace RandomAPI.Repository
                     $"WARNING: Duplicate event detected. EventId: {eventModel.EventId}"
                 );
                 const string selectExistingSql = "SELECT Id FROM Events WHERE EventId = @EventId";
-                var existingId = await _db.ExecuteScalarAsync<int>(
+                var existingId = await db.ExecuteScalarAsync<int>(
                     selectExistingSql,
                     new { eventModel.EventId }
                 );
@@ -70,19 +79,21 @@ namespace RandomAPI.Repository
         /// <inheritdoc />
         public async Task<IEnumerable<Event>> GetAllEventsAsync()
         {
+            using var db = CreateConnection();
             // Retrieves all records, ordered by newest first.
             const string sql = "SELECT * FROM Events ORDER BY Timestamp DESC";
 
-            var events = await _db.QueryAsync<Event>(sql);
+            var events = await db.QueryAsync<Event>(sql);
             return events;
         }
 
         /// <inheritdoc />
         public async Task<IEnumerable<Event>> GetRangeOfRecentEventsAsync(int count)
         {
+            using var db = CreateConnection();
             const string sql = "SELECT * FROM Events ORDER BY Timestamp DESC LIMIT @Count";
 
-            var events = await _db.QueryAsync<Event>(sql, new { Count = count });
+            var events = await db.QueryAsync<Event>(sql, new { Count = count });
             return events;
         }
 
@@ -92,18 +103,20 @@ namespace RandomAPI.Repository
             if (ids == null || !ids.Any())
                 return Enumerable.Empty<Event>();
 
+            using var db = CreateConnection();
             const string sql = "SELECT * FROM Events WHERE Id IN @Ids ORDER BY Timestamp DESC";
 
-            var events = await _db.QueryAsync<Event>(sql, new { Ids = ids });
+            var events = await db.QueryAsync<Event>(sql, new { Ids = ids });
             return events;
         }
 
         /// <inheritdoc />
         public async Task<int> RemoveEventAsync(int id)
         {
+            using var db = CreateConnection();
             const string sql = "DELETE FROM Events WHERE Id = @Id";
 
-            var rowsAffected = await _db.ExecuteAsync(sql, new { Id = id });
+            var rowsAffected = await db.ExecuteAsync(sql, new { Id = id });
             return rowsAffected;
         }
 
@@ -112,11 +125,13 @@ namespace RandomAPI.Repository
         {
             if (ids == null || !ids.Any())
                 return 0;
-
+            using var db = CreateConnection();
             const string sql = "DELETE FROM Events WHERE Id IN @Ids";
 
-            var rowsAffected = await _db.ExecuteAsync(sql, new { Ids = ids });
+            var rowsAffected = await db.ExecuteAsync(sql, new { Ids = ids });
             return rowsAffected;
         }
     }
 }
+
+

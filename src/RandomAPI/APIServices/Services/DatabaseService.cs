@@ -24,7 +24,7 @@ public class DatabaseService
     /// <summary>
     /// Opens a connection, executes a Dapper query, and returns a collection of results.
     /// </summary>
-    /// <typeparam name="T">The type of object to map the result rows to (e.g., Event).</typeparam>
+    /// <typeparam name="T">The Type of object to map the result rows to (e.g., Event).</typeparam>
     /// <param name="sql">The SQL SELECT statement to execute.</param>
     /// <param name="param">Optional parameters object for Dapper.</param>
     /// <returns>A collection of mapped objects.</returns>
@@ -55,7 +55,7 @@ public class DatabaseService
     /// <summary>
     /// Opens a connection, executes a command, and returns a single value (e.g., the last inserted ID).
     /// </summary>
-    /// <typeparam name="T">The type of the scalar result (e.g., int).</typeparam>
+    /// <typeparam name="T">The Type of the scalar result (e.g., int).</typeparam>
     /// <param name="sql">The SQL command to execute.</param>
     /// <param name="param">Optional parameters object for Dapper.</param>
     /// <returns>The single scalar result.</returns>
