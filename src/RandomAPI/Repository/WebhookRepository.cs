@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Microsoft.Data.Sqlite;
 using RandomAPI.Models;
 using System.Data;
 
@@ -10,11 +11,18 @@ namespace RandomAPI.Repository
     /// </summary>
     public class WebhookRepository : IWebhookRepository, IInitializer
     {
-        private readonly IDbConnection _db;
+        private readonly Func<IDbConnection> _connectionFactory;
 
-        public WebhookRepository(IDbConnection dbService)
+        public WebhookRepository(Func<IDbConnection> connectionFactory)
         {
-            _db = dbService;
+            _connectionFactory = connectionFactory;
+        }
+
+        private IDbConnection CreateConnection()
+        {
+            var conn = _connectionFactory();
+            conn.Open();
+            return conn;
         }
 
         /// <summary>
@@ -22,14 +30,27 @@ namespace RandomAPI.Repository
         /// </summary>
         public async Task InitializeAsync()
         {
-            // Define the table structure with a unique constraint on the Url to prevent duplicates
+            using var db = CreateConnection();
+
             const string sql = @"
             CREATE TABLE IF NOT EXISTS WebhookUrls (
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                Url TEXT NOT NULL UNIQUE
+                Url TEXT NOT NULL UNIQUE,
+                Type INTEGER NOT NULL DEFAULT 0
             );";
 
-            await _db.ExecuteAsync(sql);
+            await db.ExecuteAsync(sql);
+            try
+            {
+                const string alterTableSql = "ALTER TABLE WebhookUrls ADD COLUMN Type INTEGER NOT NULL DEFAULT 0;";
+                await db.ExecuteAsync(alterTableSql);
+            }
+            catch (SqliteException ex) when (ex.SqliteErrorCode == 1) { }
+            catch (Exception)
+            {
+                //re-throw any critical exceptions
+                throw;
+            }
         }
 
         /// <summary>
@@ -38,20 +59,35 @@ namespace RandomAPI.Repository
         /// <returns>A collection of WebhookUrl objects.</returns>
         public async Task<IEnumerable<WebhookUrl>> GetAllUrlsAsync()
         {
+            using var db = CreateConnection();
             const string sql = "SELECT Id, Url FROM WebhookUrls ORDER BY Id;";
-            // Dapper maps the columns to the WebhookUrl model properties
-            return await _db.QueryAsync<WebhookUrl>(sql);
+            return await db.QueryAsync<WebhookUrl>(sql);
+        }
+
+        public async Task<IEnumerable<WebhookUrl>> GetUrlsOfTypeAsync(IWebhookService.WebhookType type)
+        {
+            using var db = CreateConnection();
+            const string sql = "SELECT Id, Url, Type FROM WebhookUrls WHERE Type = @Type;";
+            var parameters = new { Type = (int)type };
+
+            return await db.QueryAsync<WebhookUrl>(sql, parameters);
         }
 
         /// <summary>
         /// Adds a new URL to the database. Uses INSERT OR IGNORE to handle duplicates gracefully.
         /// </summary>
         /// <param name="url">The URL string to add.</param>
-        public async Task AddUrlAsync(string url)
+        public async Task AddUrlAsync(string url, IWebhookService.WebhookType type)
         {
-            // SQLITE specific command to ignore unique constraint errors if URL already exists
-            const string sql = "INSERT OR IGNORE INTO WebhookUrls (Url) VALUES (@Url);";
-            await _db.ExecuteAsync(sql, new { Url = url });
+            using var db = CreateConnection();
+            const string sql = "INSERT OR IGNORE INTO WebhookUrls (Url, Type) VALUES (@Url, @Type);";
+            var parameters = new
+            {
+                Url = url,
+                Type = (int)type
+            };
+
+            await db.ExecuteAsync(sql, parameters);
         }
 
         /// <summary>
@@ -61,8 +97,9 @@ namespace RandomAPI.Repository
         /// <returns>The number of rows deleted (0 or 1).</returns>
         public async Task<int> DeleteUrlAsync(string url)
         {
+            using var db = CreateConnection();
             const string sql = "DELETE FROM WebhookUrls WHERE Url = @Url;";
-            return await _db.ExecuteAsync(sql, new { Url = url });
+            return await db.ExecuteAsync(sql, new { Url = url });
         }
     }
 }

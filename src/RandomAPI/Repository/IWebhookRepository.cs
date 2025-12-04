@@ -8,7 +8,8 @@ namespace RandomAPI.Repository
     public interface IWebhookRepository
     {
         Task<IEnumerable<WebhookUrl>> GetAllUrlsAsync();
-        Task AddUrlAsync(string url);
+        Task<IEnumerable<WebhookUrl>> GetUrlsOfTypeAsync(IWebhookService.WebhookType type);
+        Task AddUrlAsync(string url, IWebhookService.WebhookType type);
         Task<int> DeleteUrlAsync(string url);
     }
 }

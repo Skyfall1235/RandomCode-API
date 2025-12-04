@@ -12,13 +12,20 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddTransient<IDbConnection>(_ => new SqliteConnection(
-    DBInitialization.CONNECTIONSTRING
-));
+builder.Services.AddScoped<IDbConnection>(sp =>
+{
+    var conn = new SqliteConnection("Data Source=PersonalDev.db;Cache=Shared");
+    conn.Open();
+    return conn;
+});
+builder.Services.AddScoped<Func<IDbConnection>>(sp =>
+    () => sp.GetRequiredService<IDbConnection>());
+
 
 #region Add Services
 //webhook
-builder.Services.AddSingleton<IWebhookService, WebhookService>();
+builder.Services.AddScoped<IWebhookService, WebhookActionService>();
+
 
 //time clock service
 builder.Services.AddSingleton<IHoursService, TimeOutService>();

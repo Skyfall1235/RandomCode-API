@@ -1,4 +1,4 @@
-namespace RandomAPI.Services.Webhooks
+namespace RandomAPI.Models
 {
     public interface ICustomWebhookPayload : IWebHookPayload
     {

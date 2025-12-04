@@ -1,3 +1,6 @@
+using RandomAPI.Models;
+using RandomAPI.Services.Webhooks;
+
 namespace RandomAPI.Services.Webhooks
 {
     public class WebhookPayload : ICustomWebhookPayload

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RandomAPI.Services.Webhooks;
+using static IWebhookService;
 
 namespace RandomAPI.Controllers
 {
@@ -10,7 +11,9 @@ namespace RandomAPI.Controllers
         private readonly ILogger<WebhookController> _logger;
         private readonly IWebhookService _webhookService;
 
-        public WebhookController(ILogger<WebhookController> logger, IWebhookService webhookService)
+        public WebhookController(
+            ILogger<WebhookController> logger,
+            IWebhookService webhookService)
         {
             _logger = logger;
             _webhookService = webhookService;
@@ -20,105 +23,77 @@ namespace RandomAPI.Controllers
         /// Gets a list of all currently registered webhook listener URLs.
         /// </summary>
         [HttpGet("listeners")]
-        public IActionResult GetListeners()
+        public async Task<IActionResult> GetListeners()
         {
-            return Ok(_webhookService.GetListeners());
+            var urls = await _webhookService.GetListenersAsync();
+            return Ok(urls);
         }
 
         /// <summary>
         /// Registers a new URL to receive webhook payloads.
         /// </summary>
-        /// <param name="url">The URL to register.</param>
         [HttpPost("register")]
-        public IActionResult Register([FromBody] string url)
+        public async Task<IActionResult> RegisterUrl([FromBody] string url)
         {
-            if (string.IsNullOrWhiteSpace(url))
-            {
-                return BadRequest("URL cannot be empty.");
-            }
-
-            if (_webhookService.AddListener(url))
-            {
-                _logger.LogInformation("Registered new webhook listener: {Url}", url);
-                return Ok(new { Message = $"Listener added successfully for {url}" });
-            }
-
-            return Conflict(new { Message = $"URL is already registered: {url}" });
+            return await _webhookService.HandleRegisterActionAsync(url);
+        }
+        /// <summary>
+        /// Registers a new URL to receive webhook payloads.
+        /// </summary>
+        [HttpPost("register-discord")]
+        public async Task<IActionResult> RegisterDiscordUrl([FromBody] string url)
+        {
+            return await _webhookService.HandleRegisterActionAsync(url, WebhookType.Discord);
         }
 
         /// <summary>
         /// Removes a URL from the list of webhook listeners.
         /// </summary>
-        /// <param name="url">The URL to unregister.</param>
         [HttpDelete("unregister")]
-        public IActionResult Unregister([FromBody] string url)
+        public async Task<IActionResult> UnregisterUrl([FromBody] string url)
         {
-            if (string.IsNullOrWhiteSpace(url))
-            {
-                return BadRequest("URL cannot be empty.");
-            }
-
-            if (_webhookService.RemoveListener(url))
-            {
-                _logger.LogInformation("Unregistered webhook listener: {Url}", url);
-                return Ok(new { Message = $"Listener removed successfully for {url}" });
-            }
-
-            return NotFound(new { Message = $"URL not found in listener list: {url}" });
+            return await _webhookService.HandleUnregisterActionAsync(url);
         }
 
         /// <summary>
-        /// Endpoint to manually trigger a test broadcast of a payload.
+        /// Endpoint to manually trigger a test broadcast.
         /// </summary>
-        /// <param name="payload">The payload message to send.</param>
         [HttpPost("debug/broadcast-test")]
         public async Task<IActionResult> BroadcastTest([FromBody] WebhookPayload payload)
         {
-            if (!_webhookService.GetListeners().Any())
-            {
-                return BadRequest("No listeners registered to broadcast to.");
-            }
+            var listeners = await _webhookService.GetListenersAsync();
 
-            // Ensure the payload has a fresh timestamp
+            if (!listeners.Any())
+                return BadRequest("No listeners registered to broadcast to.");
+
             payload.Timestamp = DateTime.UtcNow;
 
             _logger.LogInformation("Broadcasting test payload: {Message}", payload.content);
 
-            // This runs asynchronously in the background. We don't wait for every success.
             await _webhookService.BroadcastAsync(payload);
 
-            return Ok(
-                new
-                {
-                    Message = $"Broadcast initiated successfully for message: '{payload.content}'. Check logs for delivery status.",
-                }
-            );
+            return Ok(new
+            {
+                Message = $"Broadcast sent for message: '{payload.content}'. Check logs for delivery status."
+            });
         }
 
         [HttpPost("debug/discord-broadcast-test")]
-        public async Task<IActionResult> BroadcastDiscordTest(
-            [FromBody] DiscordWebhookPayload payload
-        )
+        public async Task<IActionResult> BroadcastDiscordTest([FromBody] DiscordWebhookPayload payload)
         {
-            if (!_webhookService.GetListeners().Any())
-            {
+            var listeners = await _webhookService.GetListenersAsync();
+
+            if (!listeners.Any())
                 return BadRequest("No listeners registered to broadcast to.");
-            }
 
-            // Ensure the payload has a fresh timestamp
-            //payload.Timestamp = DateTime.UtcNow;
+            _logger.LogInformation("Broadcasting Discord payload: {Message}", payload.content?.Replace("\r", "").Replace("\n", ""));
 
-            _logger.LogInformation("Broadcasting test payload: {Message}", payload.content);
-
-            // This runs asynchronously in the background. We don't wait for every success.
             await _webhookService.BroadcastAsync(payload);
 
-            return Ok(
-                new
-                {
-                    Message = $"Broadcast initiated successfully for message: '{payload.content}'. Check logs for delivery status.",
-                }
-            );
+            return Ok(new
+            {
+                Message = $"Broadcast sent for message: '{payload.content}'. Check logs for delivery status."
+            });
         }
     }
 }
