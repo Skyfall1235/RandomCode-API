@@ -29,10 +29,11 @@ namespace RandomAPI.Services.Webhooks
                 return new BadRequestObjectResult("URL cannot be empty.");
             //neede both on regisdter and deregister
             url = url.Trim();
+            var safeUrlForLog = url.Replace("\r", "").Replace("\n", "");
 
             await base.AddListenerAsync(url, type);
 
-            _logger.LogInformation("Registered new webhook listener: {Url}", url);
+            _logger.LogInformation("Registered new webhook listener: {Url}", safeUrlForLog);
 
             return new OkObjectResult(new { Message = $"Listener added successfully: {url}" });
         }
@@ -41,6 +42,7 @@ namespace RandomAPI.Services.Webhooks
         {
             if (string.IsNullOrWhiteSpace(url))
             {
+            var safeUrlForLog = url.Replace("\r", "").Replace("\n", "");
                 return new BadRequestObjectResult("URL cannot be empty.");
             }
             url = url.Trim();
@@ -52,7 +54,7 @@ namespace RandomAPI.Services.Webhooks
                 return new NotFoundObjectResult(new { Message = $"URL not found: {url}" });
             }
 
-            _logger.LogInformation("Unregistered webhook listener: {Url}", url);
+            _logger.LogInformation("Unregistered webhook listener: {Url}", safeUrlForLog);
             return new OkObjectResult(new { Message = $"Listener removed: {url}" });
         }
 
