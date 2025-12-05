@@ -89,7 +89,7 @@ namespace RandomAPI.Services.Webhooks
         private static string SanitizeURL(ref string url)
         {
             url = url.Trim();
-            var safeUrlForLog = url.Replace("\r", "").Replace("\n", "");
+            string? safeUrlForLog = url.Replace("\r", "").Replace("\n", "");
             return safeUrlForLog;
         }
     }
