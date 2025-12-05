@@ -4,6 +4,10 @@
 Random Code API is a centralized API that provides access to all the random services, tools, and other projects I write code for. The goal of this project is to consolidate my utilities and experimental code into a single, easy-to-access API.
 
 ---
+# CI/CD for this project
+[![CodeQL PR Analysis status](https://github.com/Skyfall1235/RandomCodeAPI/actions/workflows/CodeQL_PR_Analysis.yml/badge.svg)](https://github.com/Skyfall1235/RandomCodeAPI/actions/workflows/CodeQL_PR_Analysis.yml)
+[![Dependabot Alerts](https://img.shields.io/badge/Dependabot-Enabled-0288d1)](https://github.com/Skyfall1235/RandomCodeAPI/network/alerts)
+---
 
 ## Features
 <!-- List key features of your API here -->
