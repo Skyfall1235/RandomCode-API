@@ -78,6 +78,12 @@ app.Run();
 // TODO:
 // - good logging service. rabapp has an event table, i bet i could do something worse
 
+// date idea generator based on a list of ideas and an energy rating. should have a table of all ideas, endpoints to review what exists, and display the most recent selection from both parties
+
+// idea - email checker that notifies me when a meeting time is moved or canceled for rabapp
+
+//
+
 // - AlertGatewayService
 //      API Endpoint Goal: POST / alert / ingest
 //      Brief Description(Project Scope): Centralized Notification Hub with Discord Integration.
@@ -97,3 +103,6 @@ public class HealthCheckService { }
 //      A CRUD API to save and retrieve frequently forgotten code snippets, complex CLI commands, and database queries.
 //      Supports robust searching by language (python, sql) and customizable tags (regex, lambda, auth).
 public class UniversalSnippetService { }
+//list of strings as languages
+//list of strings as tags
+//snippet should probably the language(s), list of tags, the code snippet, and a description?
