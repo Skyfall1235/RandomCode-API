@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RandomAPI.Services.Webhooks;
-using static IWebhookService;
+
 
 namespace RandomAPI.Controllers
 {
@@ -43,7 +43,7 @@ namespace RandomAPI.Controllers
         [HttpPost("register-discord")]
         public async Task<IActionResult> RegisterDiscordUrl([FromBody] string url)
         {
-            return await _webhookService.HandleRegisterActionAsync(url, WebhookType.Discord);
+            return await _webhookService.HandleRegisterActionAsync(url, IWebhookService.WebhookType.Discord);
         }
 
         /// <summary>

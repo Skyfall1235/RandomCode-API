@@ -1,5 +1,4 @@
 using RandomAPI.Repository;
-using static IWebhookService;
 
 namespace RandomAPI.Services.Webhooks
 {
@@ -21,13 +20,13 @@ namespace RandomAPI.Services.Webhooks
             return urls.Select(u => u.Url);
         }
 
-        public async Task<IEnumerable<string>> GetListenersAsync(WebhookType type = WebhookType.Default)
+        public async Task<IEnumerable<string>> GetListenersAsync(IWebhookService.WebhookType type = IWebhookService.WebhookType.Default)
         {
             var urls = await _repo.GetUrlsOfTypeAsync(type);
             return urls.Select(u => u.Url);
         }
 
-        public async Task AddListenerAsync(string url, WebhookType type = default)
+        public async Task AddListenerAsync(string url, IWebhookService.WebhookType type = default)
         {
             await _repo.AddUrlAsync(url, type);
         }

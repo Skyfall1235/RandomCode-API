@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using RandomAPI.Models;
 using RandomAPI.Repository;
-using static IWebhookService;
 
 namespace RandomAPI.Services.Webhooks
 {
@@ -16,7 +15,7 @@ namespace RandomAPI.Services.Webhooks
             return new OkObjectResult(urls);
         }
 
-        public async Task<IActionResult> HandleGetListenersOfTypeAsync(WebhookType type)
+        public async Task<IActionResult> HandleGetListenersOfTypeAsync(IWebhookService.WebhookType type)
         {
             var urls = await base.GetListenersAsync(type);
             return new OkObjectResult(urls);
@@ -26,7 +25,7 @@ namespace RandomAPI.Services.Webhooks
         {
             if (string.IsNullOrWhiteSpace(url))
                 return new BadRequestObjectResult("URL cannot be empty.");
-            //neede both on regisdter and deregister
+            //needed both on regisdter and deregister
             string safeUrlForLog = SanitizeURL(ref url);
 
             await base.AddListenerAsync(url, type);
@@ -89,7 +88,7 @@ namespace RandomAPI.Services.Webhooks
         private static string SanitizeURL(ref string url)
         {
             url = url.Trim();
-            var safeUrlForLog = url.Replace("\r", "").Replace("\n", "");
+            string? safeUrlForLog = url.Replace("\r", "").Replace("\n", "");
             return safeUrlForLog;
         }
     }

@@ -1,5 +1,5 @@
 ﻿
-namespace RandomAPI.Models
+namespace RandomAPI.Services.Webhooks
 {
     /// <summary>
     /// Represents a registered webhook listener URL stored in the database.
