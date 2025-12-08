@@ -37,14 +37,13 @@ namespace RandomAPI.Services.Webhooks
 
         public async Task<IActionResult> HandleUnregisterActionAsync([FromBody] string url)
         {
-            string safeUrlForLog = url;
             if (string.IsNullOrWhiteSpace(url))
             {
                 
                 return new BadRequestObjectResult("URL cannot be empty.");
             }
 
-            safeUrlForLog = SanitizeURL(ref url);
+            string safeUrlForLog = SanitizeURL(ref url);
             var removed = await base.RemoveListenerAsync(url);
             if (!removed)
             {
