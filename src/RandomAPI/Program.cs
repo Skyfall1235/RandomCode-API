@@ -105,7 +105,27 @@ app.Run();
 //      Brief Description(Project Scope): Unified System Status Dashboard.
 //      Periodically polls the health endpoints (/status or /health) of critical development services (Database, Backend API, CI/CD pipeline).
 //      Aggregates the results into a single, simplified GREEN/YELLOW/RED status JSON response for quick checking.
-public class HealthCheckService { }
+public class HealthCheckService
+{
+    public enum ServiceQuality
+    {
+        Low, Medium, High
+    }
+    public class ServiceDto
+    {
+        public string ServiceName { get; set; }
+        public string ServiceResponseTIme { get; set; }
+        public ServiceQuality ServiceQuality { get; set; }
+    }
+
+    //task for getting a single service status
+    //task for getting all service statuses
+    //force a refresh of them
+
+    //how does one detyermine status???
+}
+
+
 
 // - UniversalSnippetStore
 //      API Endpoint Goal: POST / snippet and GET /snippet/search
