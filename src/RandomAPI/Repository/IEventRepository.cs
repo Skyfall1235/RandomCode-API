@@ -9,7 +9,7 @@ namespace RandomAPI.Repository
     {
         /// <summary>
         /// Attempts to add a new Event record to the database.
-        /// Throws an exception if the EventId (based on content hash) already exists.
+        /// Throws an exception if the EventId (based on Content hash) already exists.
         /// </summary>
         /// <param name="eventModel">The new Event object to insert.</param>
         /// <returns>The ID (surrogate key) of the newly inserted record.</returns>

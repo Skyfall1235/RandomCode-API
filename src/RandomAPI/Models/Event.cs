@@ -31,7 +31,7 @@
         }
 
         /// <summary>
-        /// Creates a new event, auto-generating Timestamp and content-based EventId.
+        /// Creates a new event, auto-generating Timestamp and Content-based EventId.
         /// </summary>
         public Event(string service, string type, string jsonData, string dataType = "JSON")
         {

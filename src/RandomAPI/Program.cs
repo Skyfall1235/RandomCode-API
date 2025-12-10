@@ -35,13 +35,7 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IWebhookRepository, WebhookRepository>();
 
 // CRON schjeduled services
-builder.Services.AddHostedService<CronTaskRunnerService>();
-// Register all tasks as Scoped
-// Schedule 1: Once a day at 4:00 AM (Schedule: "Daily@04:00")
-builder.Services.AddScoped<ICronScheduledTask, DailyMaintenanceTask>();
-// Schedule 2: Monday and Friday mornings @ 8:30 AM (Schedule: "Monday@08:30" and "Friday@08:30")
-builder.Services.AddScoped<ICronScheduledTask, BiWeeklyReportTaskMonday>();
-builder.Services.AddScoped<ICronScheduledTask, BiWeeklyReportTaskFriday>();
+builder.Services.AddHostedService<CronTaskRunnerService>();//needs to be completely redone. use a db and store those things.
 
 
 #endregion
