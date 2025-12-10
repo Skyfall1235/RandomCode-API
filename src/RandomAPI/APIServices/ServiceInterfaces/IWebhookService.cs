@@ -14,7 +14,7 @@ namespace RandomAPI.Services.Webhooks
         /// Registers a new webhook listener URL.
         /// </summary>
         /// <returns>True if added, false if it already existed.</returns>
-        Task AddListenerAsync(string url, WebhookType type = default);
+        Task AddListenerAsync(string url, string source);
 
         /// <summary>
         /// Removes a webhook listener URL.
@@ -31,21 +31,14 @@ namespace RandomAPI.Services.Webhooks
         /// returns a snapshot of all registered listenrs of a given type
         /// </summary>
         /// <param name="type"> the type of url</param>
-        Task<IEnumerable<string>> GetListenersAsync(WebhookType type = WebhookType.Default);
+        Task<IEnumerable<string>> GetListenersAsync(string source);
 
         // Controller Logic Methods (Implemented in the derived class)
         public Task<IActionResult> HandleGetListenersActionAsync();
-        public Task<IActionResult> HandleGetListenersOfTypeAsync(WebhookType type);
-        public Task<IActionResult> HandleRegisterActionAsync(string url, WebhookType type = default);
+        public Task<IActionResult> HandleGetListenersOfSourceAsync(string source);
+        public Task<IActionResult> HandleRegisterActionAsync(string url, string source = "");
         public Task<IActionResult> HandleUnregisterActionAsync(string url);
-        public Task<IActionResult> HandleBroadcastActionAsync(IWebHookPayload payload);
-
-        public enum WebhookType
-        {
-            Default = 0,
-            Discord = 1,
-            Logging = 2,
-        }
+        public Task<IActionResult> HandleBroadcastActionAsync(IWebHookPayload payload, string source);
     }
 }
 

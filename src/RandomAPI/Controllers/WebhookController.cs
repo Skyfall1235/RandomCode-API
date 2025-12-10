@@ -40,10 +40,10 @@ namespace RandomAPI.Controllers
         /// <summary>
         /// Registers a new URL to receive webhook payloads.
         /// </summary>
-        [HttpPost("register-discord")]
-        public async Task<IActionResult> RegisterDiscordUrl([FromBody] string url)
+        [HttpPost("register-source")]
+        public async Task<IActionResult> RegisterUrlWithSource([FromBody] string url, string source = "")
         {
-            return await _webhookService.HandleRegisterActionAsync(url, IWebhookService.WebhookType.Discord);
+            return await _webhookService.HandleRegisterActionAsync(url, source);
         }
 
         /// <summary>
@@ -68,31 +68,13 @@ namespace RandomAPI.Controllers
 
             payload.Timestamp = DateTime.UtcNow;
 
-            _logger.LogInformation("Broadcasting test payload: {Message}", payload.content);
+            _logger.LogInformation("Broadcasting test payload: {Message}", payload.Content);
 
             await _webhookService.BroadcastAsync(payload);
 
             return Ok(new
             {
-                Message = $"Broadcast sent for message: '{payload.content}'. Check logs for delivery status."
-            });
-        }
-
-        [HttpPost("debug/discord-broadcast-test")]
-        public async Task<IActionResult> BroadcastDiscordTest([FromBody] DiscordWebhookPayload payload)
-        {
-            var listeners = await _webhookService.GetListenersAsync();
-
-            if (!listeners.Any())
-                return BadRequest("No listeners registered to broadcast to.");
-
-            _logger.LogInformation("Broadcasting Discord payload: {Message}", payload.content?.Replace("\r", "").Replace("\n", ""));
-
-            await _webhookService.BroadcastAsync(payload);
-
-            return Ok(new
-            {
-                Message = $"Broadcast sent for message: '{payload.content}'. Check logs for delivery status."
+                Message = $"Broadcast sent for message: '{payload.Content}'. Check logs for delivery status."
             });
         }
     }

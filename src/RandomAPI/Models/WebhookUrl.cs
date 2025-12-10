@@ -6,8 +6,8 @@ namespace RandomAPI.Services.Webhooks
     /// </summary>
     public class WebhookUrl
     {
-        public int Id { get; set; }
+        public required int Id { get; set; }
         public required string Url { get; set; }
-        public IWebhookService.WebhookType Type { get; set; }
+        public required string Source { get; set; }
     }
 }

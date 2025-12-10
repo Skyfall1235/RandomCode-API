@@ -20,15 +20,15 @@ namespace RandomAPI.Services.Webhooks
             return urls.Select(u => u.Url);
         }
 
-        public async Task<IEnumerable<string>> GetListenersAsync(IWebhookService.WebhookType type = IWebhookService.WebhookType.Default)
+        public async Task<IEnumerable<string>> GetListenersAsync(string source)
         {
-            var urls = await _repo.GetUrlsOfTypeAsync(type);
+            var urls = await _repo.GetUrlsOfSourceAsync(source);
             return urls.Select(u => u.Url);
         }
 
-        public async Task AddListenerAsync(string url, IWebhookService.WebhookType type = default)
+        public async Task AddListenerAsync(string url, string source)
         {
-            await _repo.AddUrlAsync(url, type);
+            await _repo.AddUrlAsync(url, source);
         }
 
         public async Task<bool> RemoveListenerAsync(string url)
@@ -43,6 +43,14 @@ namespace RandomAPI.Services.Webhooks
             IEnumerable<string> urls = await GetListenersAsync();
             await BroadcastAsync(payload, urls);
         }
+
+        //broadcast for all of source
+        public async Task BroadcastAsync<T>(T payload, string source) where T : class
+        {
+            IEnumerable<string> urls = await GetListenersAsync(source);
+            await BroadcastAsync(payload, urls);
+        }
+
         //derived for the payloads
         public async Task BroadcastAsync<T>(T payload, IEnumerable<string> urls) where T : class
         {

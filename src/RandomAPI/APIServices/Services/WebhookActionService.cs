@@ -15,20 +15,20 @@ namespace RandomAPI.Services.Webhooks
             return new OkObjectResult(urls);
         }
 
-        public async Task<IActionResult> HandleGetListenersOfTypeAsync(IWebhookService.WebhookType type)
+        public async Task<IActionResult> HandleGetListenersOfSourceAsync(string source)
         {
-            var urls = await base.GetListenersAsync(type);
+            var urls = await base.GetListenersAsync(source);
             return new OkObjectResult(urls);
         }
 
-        public async Task<IActionResult> HandleRegisterActionAsync([FromBody] string url, IWebhookService.WebhookType type = default)
+        public async Task<IActionResult> HandleRegisterActionAsync([FromBody] string url, string source)
         {
             if (string.IsNullOrWhiteSpace(url))
                 return new BadRequestObjectResult("URL cannot be empty.");
             //needed both on regisdter and deregister
             string safeUrlForLog = SanitizeURL(ref url);
 
-            await base.AddListenerAsync(url, type);
+            await base.AddListenerAsync(url, source);
 
             _logger.LogInformation("Registered new webhook listener: {Url}", safeUrlForLog);
 
@@ -54,33 +54,20 @@ namespace RandomAPI.Services.Webhooks
             return new OkObjectResult(new { Message = $"Listener removed: {url}" });
         }
 
-        public async Task<IActionResult> HandleBroadcastActionAsync([FromBody] IWebHookPayload payload)
+        public async Task<IActionResult> HandleBroadcastActionAsync([FromBody] IWebHookPayload payload, string source)
         {
-            var listeners = await base.GetListenersAsync();
+            var listeners = await GetListenersAsync(source);
 
             if (!listeners.Any())
                 return new BadRequestObjectResult("No listeners registered to broadcast to.");
+            payload.Timestamp = DateTime.UtcNow;
 
-            switch (payload)
-            {
-                case WebhookPayload p:
-                    p.Timestamp = DateTime.UtcNow;
 
-                    break;
-
-                case DiscordWebhookPayload p:
-                    break;
-
-                default:
-                    _logger.LogWarning("Received unsupported payload type: {Type}", payload.GetType().Name);
-                    return new BadRequestObjectResult(new { Message = "Unsupported webhook payload type." });
-            }
-
-            _logger.LogInformation("Broadcasting test payload: {Message}", payload.content);
-            await base.BroadcastAsync(payload);
+            _logger.LogInformation("Broadcasting test payload: {Message}", payload.Content);
+            await BroadcastAsync(payload);
             return new OkObjectResult(new
             {
-                Message = $"Broadcast sent for message: '{payload.content}'. Check logs for delivery status."
+                Message = $"Broadcast sent for message: '{payload.Content}'. Check logs for delivery status."
             });
         }
 

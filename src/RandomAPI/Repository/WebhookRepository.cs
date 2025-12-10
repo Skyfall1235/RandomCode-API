@@ -32,26 +32,14 @@ namespace RandomAPI.Repository
         public async Task InitializeAsync()
         {
             using var db = CreateConnection();
-
             const string sql = @"
             CREATE TABLE IF NOT EXISTS WebhookUrls (
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Id TEXT PRIMARY KEY AUTOINCREMENT,
                 Url TEXT NOT NULL UNIQUE,
-                Type INTEGER NOT NULL DEFAULT 0
+                Source TEXT NOT NULL 
             );";
 
             await db.ExecuteAsync(sql);
-            try
-            {
-                const string alterTableSql = "ALTER TABLE WebhookUrls ADD COLUMN Type INTEGER NOT NULL DEFAULT 0;";
-                await db.ExecuteAsync(alterTableSql);
-            }
-            catch (SqliteException ex) when (ex.SqliteErrorCode == 1) { }
-            catch (Exception)
-            {
-                //re-throw any critical exceptions
-                throw;
-            }
         }
 
         /// <summary>
@@ -61,15 +49,15 @@ namespace RandomAPI.Repository
         public async Task<IEnumerable<WebhookUrl>> GetAllUrlsAsync()
         {
             using var db = CreateConnection();
-            const string sql = "SELECT Id, Url FROM WebhookUrls ORDER BY Id;";
+            const string sql = "SELECT Id, Url, Source FROM WebhookUrls ORDER BY Id;";
             return await db.QueryAsync<WebhookUrl>(sql);
         }
 
-        public async Task<IEnumerable<WebhookUrl>> GetUrlsOfTypeAsync(IWebhookService.WebhookType type)
+        public async Task<IEnumerable<WebhookUrl>> GetUrlsOfSourceAsync(string source)
         {
             using var db = CreateConnection();
-            const string sql = "SELECT Id, Url, Type FROM WebhookUrls WHERE Type = @Type;";
-            var parameters = new { Type = (int)type };
+            const string sql = "SELECT Id, Url, Source FROM WebhookUrls WHERE Source = @Source;";
+            var parameters = new { Source = source };
 
             return await db.QueryAsync<WebhookUrl>(sql, parameters);
         }
@@ -78,14 +66,15 @@ namespace RandomAPI.Repository
         /// Adds a new URL to the database. Uses INSERT OR IGNORE to handle duplicates gracefully.
         /// </summary>
         /// <param name="url">The URL string to add.</param>
-        public async Task AddUrlAsync(string url, IWebhookService.WebhookType type)
+        /// <param name="source">The source string to categorize the URL.</param>
+        public async Task AddUrlAsync(string url, string source)
         {
             using var db = CreateConnection();
-            const string sql = "INSERT OR IGNORE INTO WebhookUrls (Url, Type) VALUES (@Url, @Type);";
+            const string sql = "INSERT OR IGNORE INTO WebhookUrls (Url, Source) VALUES (@Url, @Source);";
             var parameters = new
             {
                 Url = url,
-                Type = (int)type
+                Source = source
             };
 
             await db.ExecuteAsync(sql, parameters);
