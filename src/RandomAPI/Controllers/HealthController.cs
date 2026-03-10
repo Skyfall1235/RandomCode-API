@@ -6,7 +6,7 @@ namespace RandomAPI.Controllers
     [Route("api/[controller]")]
     public class APIHealthController : ControllerBase
     {
-        [HttpPost("calculate")]
+        [HttpGet("calculate")]
         public IActionResult Health()
         {
             return Ok();

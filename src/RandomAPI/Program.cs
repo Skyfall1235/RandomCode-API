@@ -27,15 +27,23 @@ builder.Services.AddScoped<Func<IDbConnection>>(sp =>
 builder.Services.AddScoped<IWebhookService, WebhookActionService>();
 
 
-//time clock service
-builder.Services.AddSingleton<IHoursService, TimeOutService>();
-
 //db
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IWebhookRepository, WebhookRepository>();
 
-// CRON schjeduled services
-builder.Services.AddHostedService<CronTaskRunnerService>();//needs to be completely redone. use a db and store those things.
+//CORS
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+
+
 
 
 #endregion
@@ -71,6 +79,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors();
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
@@ -80,13 +90,9 @@ app.MapControllers();
 app.Run();
 
 // TODO:
-// - good logging service. rabapp has an event table, i bet i could do something worse
+// - good logging service.
 
-// date idea generator based on a list of ideas and an energy rating. should have a table of all ideas, endpoints to review what exists, and display the most recent selection from both parties
-
-// idea - email checker that notifies me when a meeting time is moved or canceled for rabapp
-
-//
+// - 
 
 // - AlertGatewayService
 //      API Endpoint Goal: POST / alert / ingest
@@ -99,34 +105,6 @@ app.Run();
 //      Brief Description(Project Scope): Unified System Status Dashboard.
 //      Periodically polls the health endpoints (/status or /health) of critical development services (Database, Backend API, CI/CD pipeline).
 //      Aggregates the results into a single, simplified GREEN/YELLOW/RED status JSON response for quick checking.
-public class HealthCheckService
-{
-    public enum ServiceQuality
-    {
-        Low, Medium, High
-    }
-    public class ServiceDto
-    {
-        public string ServiceName { get; set; }
-        public string ServiceResponseTIme { get; set; }
-        public ServiceQuality ServiceQuality { get; set; }
-    }
 
-    //task for getting a single service status
-    //task for getting all service statuses
-    //force a refresh of them
-
-    //how does one detyermine status???
-}
-
-
-
-// - UniversalSnippetStore
-//      API Endpoint Goal: POST / snippet and GET /snippet/search
-//      Brief Description (Project Scope): Personal Developer Knowledge Base.
-//      A CRUD API to save and retrieve frequently forgotten code snippets, complex CLI commands, and database queries.
-//      Supports robust searching by language (python, sql) and customizable tags (regex, lambda, auth).
-public class UniversalSnippetService { }
-//list of strings as languages
-//list of strings as tags
-//snippet should probably the language(s), list of tags, the code snippet, and a description?
+// - endpoint that subscribes to a youtuber channel, and whwenver theyt upload a video, we download it and display it
+// - 
