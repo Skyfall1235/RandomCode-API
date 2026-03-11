@@ -1,7 +1,8 @@
-using System.Data;
 using Microsoft.Data.Sqlite;
 using RandomAPI.Repository;
 using RandomAPI.Services.Webhooks;
+using System.Collections.Generic;
+using System.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,10 +27,13 @@ builder.Services.AddScoped<Func<IDbConnection>>(sp =>
 //webhook
 builder.Services.AddScoped<IWebhookService, WebhookActionService>();
 
+//parked car location
+builder.Services.AddScoped<ILastParkedLocationService, LastParkedLocationService>();
 
 //db
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IWebhookRepository, WebhookRepository>();
+builder.Services.AddScoped<ILastParkedCarRepository, LastParkedLocationRepository>();
 
 //CORS
 builder.Services.AddCors(options =>
@@ -107,4 +111,5 @@ app.Run();
 //      Aggregates the results into a single, simplified GREEN/YELLOW/RED status JSON response for quick checking.
 
 // - endpoint that subscribes to a youtuber channel, and whwenver theyt upload a video, we download it and display it
-// - 
+// - a safe LOGIN service
+// - using the login service, i could store info about my parked car

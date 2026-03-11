@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using RandomAPI.Models;
-using RandomAPI.Services.Webhooks;
 
-namespace RandomAPI.Services.Webhooks
+namespace RandomAPI.Models
 {
     public class WebhookPayload : IWebHookPayload
     {

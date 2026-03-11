@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <Folder Include="DTOs\" />
-    <Folder Include="wwwroot\" />
+    <Folder Include="wwwroot\parking-photos\" />
+    <Folder Include="wwwroot\resumes\" />
   </ItemGroup>
 </Project>

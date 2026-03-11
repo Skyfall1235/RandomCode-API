@@ -1,7 +1,7 @@
 using Dapper;
 using Microsoft.Data.Sqlite;
 
-public class DatabaseService
+public class DatabaseService : IDatabaseService
 {
     private readonly string _connectionString;
 
