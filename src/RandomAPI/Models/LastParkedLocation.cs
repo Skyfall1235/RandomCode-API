@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace RandomAPI.Models
 {
     public class LastParkedLocation
@@ -18,6 +20,7 @@ namespace RandomAPI.Models
         public string? Section { get; set; }
 
         // media and management
+        [JsonIgnore]
         public string? PhotoPath { get; set; }
         public bool IsActive { get; set; } // moreso for a db than for the model
 
@@ -37,6 +40,8 @@ namespace RandomAPI.Models
             //leave photo to be fileld in later
             IsActive = true;//defgault to true as this is likely a new solution
         }
+
+        public LastParkedLocation() { }
     }
 
     public class ParkingSubmission

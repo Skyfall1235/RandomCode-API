@@ -24,16 +24,18 @@ builder.Services.AddScoped<Func<IDbConnection>>(sp =>
 
 
 #region Add Services
+//db
+builder.Services.AddScoped<IDatabaseService, DatabaseService>();
+builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<IWebhookRepository, WebhookRepository>();
+builder.Services.AddScoped<ILastParkedCarRepository, LastParkedLocationRepository>();
+
+
 //webhook
 builder.Services.AddScoped<IWebhookService, WebhookActionService>();
 
 //parked car location
 builder.Services.AddScoped<ILastParkedLocationService, LastParkedLocationService>();
-
-//db
-builder.Services.AddScoped<IEventRepository, EventRepository>();
-builder.Services.AddScoped<IWebhookRepository, WebhookRepository>();
-builder.Services.AddScoped<ILastParkedCarRepository, LastParkedLocationRepository>();
 
 //CORS
 builder.Services.AddCors(options =>
@@ -45,10 +47,6 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod();
     });
 });
-
-
-
-
 
 #endregion
 
@@ -81,6 +79,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseCors();
@@ -94,7 +93,7 @@ app.MapControllers();
 app.Run();
 
 // TODO:
-// - good logging service.
+// - good logging _service.
 
 // - 
 
@@ -102,7 +101,7 @@ app.Run();
 //      API Endpoint Goal: POST / alert / ingest
 //      Brief Description(Project Scope): Centralized Notification Hub with Discord Integration.
 //      Receives generic webhooks (from Sentry, CI/CD, etc.), standardizes the payload, applies personalized filtering rules, and routes the cleaned alert to your Discord channel using a webhook.
-//      The service will format the alert into a visually appealing Discord Embed using a library like discord-webhook or requests.
+//      The _service will format the alert into a visually appealing Discord Embed using a library like discord-webhook or requests.
 
 // - HealthCheckAggregator
 //      API Endpoint Goal: GET / health / summary
@@ -111,5 +110,5 @@ app.Run();
 //      Aggregates the results into a single, simplified GREEN/YELLOW/RED status JSON response for quick checking.
 
 // - endpoint that subscribes to a youtuber channel, and whwenver theyt upload a video, we download it and display it
-// - a safe LOGIN service
-// - using the login service, i could store info about my parked car
+// - a safe LOGIN _service
+// - using the login _service, i could store info about my parked car

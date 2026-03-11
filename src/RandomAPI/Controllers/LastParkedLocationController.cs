@@ -5,21 +5,26 @@ using RandomAPI.Models;
 [Route("api/[controller]")]
 public class LastParkedLocationController : ControllerBase
 {
-    LastParkedLocationService service;//REPLACE WITH INTERFACE
+    ILastParkedLocationService _service;
 
-    [HttpGet("ParkedLocation/get-current/{vehicleId}")]
+    public LastParkedLocationController(ILastParkedLocationService service)
+    {
+        this._service = service;
+    }
+
+    [HttpGet("get-current/{vehicleId}")]
     public async Task<IActionResult> GetCurrentLocation(string vehicleId) 
     {
-        LastParkedLocation result = await service.GetCurrentParkedLocation(vehicleId);
+        LastParkedLocation result = await _service.GetCurrentParkedLocation(vehicleId);
 
         if (result == null) return NotFound();
         return Ok(result);
     }
 
-    [HttpGet("ParkedLocation/get-past/{vehicleId}")]
+    [HttpGet("get-past/{vehicleId}")]
     public async Task<IActionResult> GetVehiclePast(string vehicleId)
     {
-        IEnumerable<LastParkedLocation> result = await service.GetVehiclePast(vehicleId);
+        IEnumerable<LastParkedLocation> result = await _service.GetVehiclePast(vehicleId);
 
         if (result == null) return NotFound();
         return Ok(result);
@@ -30,7 +35,7 @@ public class LastParkedLocationController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> PostNewLocation([FromForm] ParkingSubmission submission)
     {
-        LastParkedLocation result = await service.PostCurrentParkedLocation(submission);
+        LastParkedLocation result = await _service.PostCurrentParkedLocation(submission);
 
         if (result == null)
         {
@@ -40,10 +45,10 @@ public class LastParkedLocationController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("ParkedLocation/get-current-imnage/{vehicleId}")]
+    [HttpGet("get-current-image/{vehicleId}")]
     public async Task<IActionResult> GetvehiclePhoto(string vehicleId)
     {
-        LastParkedLocation result = await service.GetCurrentParkedLocation(vehicleId);
+        LastParkedLocation result = await _service.GetCurrentParkedLocation(vehicleId);
 
         // 1. Check if the record exists and has a photo path
         if (result == null || string.IsNullOrEmpty(result.PhotoPath))
