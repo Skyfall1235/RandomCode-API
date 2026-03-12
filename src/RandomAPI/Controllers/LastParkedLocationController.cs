@@ -39,6 +39,8 @@ public class LastParkedLocationController : ControllerBase
     // POST: api/LastParkedLocation
     // Uses [FromForm] because you are likely sending an image file + JSON/fields
     [HttpPost]
+    [ProducesResponseType(typeof(LastParkedLocation), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ParkingSubmission), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PostNewLocation([FromForm] ParkingSubmission submission)
     {
         LastParkedLocation result = await _service.PostCurrentParkedLocation(submission);
