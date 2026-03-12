@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using RandomAPI.Models;
 
 [ApiController]
 [Route("api/[controller]")]
+[ApiKey]
+[EnableRateLimiting("ParkingApiPolicy")]
 public class LastParkedLocationController : ControllerBase
 {
     ILastParkedLocationService _service;
@@ -12,15 +15,18 @@ public class LastParkedLocationController : ControllerBase
         this._service = service;
     }
 
+
     [HttpGet("get-current/{vehicleId}")]
     public async Task<IActionResult> GetCurrentLocation(string vehicleId) 
     {
         LastParkedLocation result = await _service.GetCurrentParkedLocation(vehicleId);
+        Console.WriteLine(result);
 
         if (result == null) return NotFound();
         return Ok(result);
     }
 
+    [ApiKey]
     [HttpGet("get-past/{vehicleId}")]
     public async Task<IActionResult> GetVehiclePast(string vehicleId)
     {

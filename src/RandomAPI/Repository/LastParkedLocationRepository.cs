@@ -44,12 +44,22 @@ public class LastParkedLocationRepository : ILastParkedCarRepository, IInitializ
     {
         using var db = CreateConnection();
         const string sql = @"
-            SELECT * FROM LastParkedLocation
-            WHERE VehicleId = @vehicleId AND IsActive = 1
-            ORDER BY Timestamp DESC
-            LIMIT 1;";
+        SELECT 
+            Timestamp AS ParkedAt,
+            VehicleId, 
+            Latitude, 
+            Longitude, 
+            Accuracy, 
+            Floor AS FloorLevel,
+            Section, 
+            Note AS Notes,         
+            PhotoPath, 
+            IsActive
+        FROM LastParkedLocation
+        WHERE VehicleId = @vehicleId AND IsActive = 1
+        ORDER BY Timestamp DESC
+        LIMIT 1;";
 
-        // Use QuerySingleOrDefaultAsync for a single record
         return await db.QuerySingleOrDefaultAsync<LastParkedLocation>(sql, new { vehicleId });
     }
 

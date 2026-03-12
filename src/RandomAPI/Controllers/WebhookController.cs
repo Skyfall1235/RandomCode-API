@@ -60,7 +60,7 @@ namespace RandomAPI.Controllers
         /// Endpoint to manually trigger a test broadcast.
         /// </summary>
         [HttpPost("debug/broadcast-test")]
-        public async Task<IActionResult> BroadcastTest([FromBody] WebhookPayload payload)
+        public async Task<IActionResult> BroadcastTest([FromBody] IWebHookPayload payload)
         {
             var listeners = await _webhookService.GetListenersAsync();
 

@@ -44,7 +44,20 @@ namespace RandomAPI.Models
         public LastParkedLocation() { }
     }
 
-    public class ParkingSubmission
+    public interface IParkingSubmission
+    {
+        float? Accuracy { get; set; }
+        int? FloorLevel { get; set; }
+        string? HumanReadableAddress { get; set; }
+        double Latitude { get; set; }
+        double Longitude { get; set; }
+        string? Notes { get; set; }
+        IFormFile? Photo { get; set; }
+        string? Section { get; set; }
+        string? VehicleId { get; set; }
+    }
+
+    public class ParkingSubmission : IParkingSubmission
     {
         // Identifies which car we are parking
         public string? VehicleId { get; set; }

@@ -64,3 +64,4 @@ dist/
 .DS_Store
 Thumbs.db
 src/RandomAPI/PersonalDev.db
+src/RandomAPI/PersonalDev.db

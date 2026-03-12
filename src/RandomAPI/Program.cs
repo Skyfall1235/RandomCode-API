@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Data.Sqlite;
 using RandomAPI.Repository;
 using RandomAPI.Services.Webhooks;
 using System.Collections.Generic;
 using System.Data;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,6 +61,34 @@ builder.Services.Scan(scan => scan
         .WithScopedLifetime()
 );
 
+//this is the rate limiting stuff middleare.
+builder.Services.AddRateLimiter(options =>
+{
+    // This runs whenever ANY policy is triggered
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("ParkingApiPolicy", httpContext =>
+    {
+        var remoteIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        return RateLimitPartition.GetFixedWindowLimiter(remoteIp, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        });
+    });
+
+    // Optional: Add a custom message or headers
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        await context.HttpContext.Response.WriteAsync(
+            "Too many requests. Please wait a minute before trying again.",
+            cancellationToken: token);
+    };
+});
+
 var app = builder.Build();
 //the the end, init the dbs
 using (var scope = app.Services.CreateScope())
@@ -92,6 +122,7 @@ app.MapControllers();
 
 app.Run();
 
+
 // TODO:
 // - good logging _service.
 
@@ -112,3 +143,6 @@ app.Run();
 // - endpoint that subscribes to a youtuber channel, and whwenver theyt upload a video, we download it and display it
 // - a safe LOGIN _service
 // - using the login _service, i could store info about my parked car
+
+//rate limiter
+//action requioring api key :)
