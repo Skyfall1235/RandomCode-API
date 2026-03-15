@@ -45,7 +45,9 @@ public class LastParkedLocationService : ILastParkedLocationService
             parkedLocation.PhotoPath = filePath;
         }
 
-        await _repo.DeactivateOldLocationsAsync(submission.VehicleId);
+#pragma warning disable CS8604 // Possible null reference argument.
+        await _repo.DeactivateOldLocationsAsync(parkedLocation.VehicleId);
+#pragma warning restore CS8604 // Possible null reference argument.
 
         await _repo.SaveLocationAsync(parkedLocation);
 

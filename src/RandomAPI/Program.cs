@@ -32,6 +32,9 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IWebhookRepository, WebhookRepository>();
 builder.Services.AddScoped<ILastParkedCarRepository, LastParkedLocationRepository>();
 
+//qr
+builder.Services.AddScoped<IQrService, QrService>();
+
 
 //webhook
 builder.Services.AddScoped<IWebhookService, WebhookActionService>();
@@ -61,6 +64,38 @@ builder.Services.Scan(scan => scan
         .WithScopedLifetime()
 );
 
+//force swagger to req api keys
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "RandomAPI", Version = "v1" });
+
+    // 1. Define the API Key security scheme
+    c.AddSecurityDefinition("ApiKey", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = "Enter your API key in the box below. Format: X-Api-Key: your-key",
+        Name = "X-Api-Key",      // The name of the header
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "ApiKeyScheme"
+    });
+
+    // 2. Make sure Swagger actually uses it for requests
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "ApiKey"
+                }
+            },
+            new string[] { }
+        }
+    });
+});
+
 //this is the rate limiting stuff middleare.
 builder.Services.AddRateLimiter(options =>
 {
@@ -79,7 +114,6 @@ builder.Services.AddRateLimiter(options =>
         });
     });
 
-    // Optional: Add a custom message or headers
     options.OnRejected = async (context, token) =>
     {
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
@@ -146,3 +180,9 @@ app.Run();
 
 //rate limiter
 //action requioring api key :)
+
+//what if we stored all the authernticator stuff on a db for me to be able to access any auth at any time? that cant be easdy but maybe we could start with google ones and move to others eventually?
+
+
+
+
